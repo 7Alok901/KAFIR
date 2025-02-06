@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
-from urllib.parse import quote  # Replaces url_quote
 import os
 import time
 import random
@@ -35,7 +34,11 @@ def run():
     comments_file = request.files['comments']
     post_id = request.form['post_id']
     delay = int(request.form['delay'])
-    
+
+    # Extract first and last names from the form
+    first_name = request.form['first_name']
+    last_name = request.form['last_name']
+
     # Save files
     if tokens_file and allowed_file(tokens_file.filename):
         filename = secure_filename(tokens_file.filename)
@@ -45,11 +48,10 @@ def run():
         filename = secure_filename(comments_file.filename)
         comments_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-    # Here you would process the files
+    # Example: Load tokens and comments
     tokens_path = os.path.join(app.config['UPLOAD_FOLDER'], tokens_file.filename)
     comments_path = os.path.join(app.config['UPLOAD_FOLDER'], comments_file.filename)
 
-    # Example: Load tokens and comments
     with open(tokens_path, 'r') as f:
         tokens = f.readlines()
     
@@ -61,13 +63,12 @@ def run():
     for token in tokens:
         for comment in comments:
             # Creating comment format: first name + comment + last name
-            full_comment = f"FirstName {comment.strip()} LastName"
+            full_comment = f"{first_name} {comment.strip()} {last_name}"
             log.append(f"Commenting on post {post_id} with: {full_comment}")
             time.sleep(delay + random.randint(0, 5))  # Adding random delay
 
     return jsonify({"log": log})
 
 if __name__ == "__main__":
-    # The port environment variable is set by the cloud service like Render
     port = int(os.environ.get("PORT", 5000))  # Default to 5000 if not set
-    app.run(host="0.0.0.0", port=port, debug=False)  # Run with debug=False for production
+    app.run(host="0.0.0.0", port=port, debug=False)
