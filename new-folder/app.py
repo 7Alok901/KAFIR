@@ -16,6 +16,10 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Create the uploads folder if it does not exist
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 # Route to render the form page
 @app.route('/')
 def index():
@@ -42,11 +46,14 @@ def run():
         comments_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
     # Here you would process the files
+    tokens_path = os.path.join(app.config['UPLOAD_FOLDER'], tokens_file.filename)
+    comments_path = os.path.join(app.config['UPLOAD_FOLDER'], comments_file.filename)
+
     # Example: Load tokens and comments
-    with open(os.path.join(app.config['UPLOAD_FOLDER'], 'tokens.txt'), 'r') as f:
+    with open(tokens_path, 'r') as f:
         tokens = f.readlines()
     
-    with open(os.path.join(app.config['UPLOAD_FOLDER'], 'comments.txt'), 'r') as f:
+    with open(comments_path, 'r') as f:
         comments = f.readlines()
 
     # Simulating some work: Adding delay and posting comments
@@ -60,5 +67,7 @@ def run():
 
     return jsonify({"log": log})
 
-if __name__ == '__main__':
-    app.run(debug=False)
+if __name__ == "__main__":
+    # The port environment variable is set by the cloud service like Render
+    port = int(os.environ.get("PORT", 5000))  # Default to 5000 if not set
+    app.run(host="0.0.0.0", port=port, debug=False)  # Run with debug=False for production
