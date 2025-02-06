@@ -53,12 +53,38 @@
             font-size: 1rem;
             color: #333;
         }
+        /* Flash message styles */
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .alert.success {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .alert.error {
+            background-color: #f44336;
+            color: white;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h2>Facebook Auto Commenter</h2>
+
+        <!-- Flash message -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- Form to upload tokens and comments files -->
         <form action="/run" method="POST" enctype="multipart/form-data">
